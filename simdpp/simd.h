@@ -67,6 +67,7 @@
 #include <simdpp/core/i_avg_trunc.h>
 #include <simdpp/core/i_div_p.h>
 #include <simdpp/core/i_max.h>
+#include <simdpp/core/prefix_max.h>
 #include <simdpp/core/i_min.h>
 #include <simdpp/core/i_mul.h>
 #include <simdpp/core/i_mull.h>
@@ -117,6 +118,8 @@
 #include <simdpp/core/store_packed4.h>
 #include <simdpp/core/store_u.h>
 #include <simdpp/core/stream.h>
+#include <simdpp/core/slli.h>
+#include <simdpp/core/slri.h>
 #include <simdpp/core/test_bits.h>
 #include <simdpp/core/to_float32.h>
 #include <simdpp/core/to_float64.h>

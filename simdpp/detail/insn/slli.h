@@ -20,13 +20,78 @@
 #include <simdpp/detail/insn/i_shift.h>
 #include <simdpp/detail/null/math.h>
 #include <simdpp/detail/vector_array_macros.h>
-#include <iostream>
 
 namespace simdpp {
 namespace SIMDPP_ARCH_NAMESPACE {
 namespace detail {
 namespace insn {
 
+static SIMDPP_INL
+int16x16 i_shift_l(const int16x16& a, unsigned count)
+{
+#if SIMDPP_USE_NULL
+    return detail::null::shift_l(a, count);
+#elif SIMDPP_USE_AVX2
+    uint16x8 mask, a16;
+    uint16_t mask1 = (0x00ff >> (8-count)) << 8;
+    printf("test2\n");
+    a16 = a;
+    mask = splat(mask1);
+    a16 = shift_l(a16, count);
+    a16 = bit_andnot(a16, mask);
+    return uint8x16(a16);
+#elif SIMDPP_USE_SSE2
+    uint16x8 mask, a16;
+    mask = make_ones();
+    mask = shift_r(mask, 16-count);
+    mask = shift_l(mask, 8);
+
+    a16 = a;
+    a16 = shift_l(a16, count);
+    a16 = bit_andnot(a16, mask);
+    return uint8x16(a16);
+#elif SIMDPP_USE_NEON
+    int8x16 shift = splat(count);
+    return vshlq_u8(a.native(), shift.native());
+#elif SIMDPP_USE_ALTIVEC
+    uint8x16 shift = splat(count);
+    return vec_sl(a.native(), shift.native());
+#elif SIMDPP_USE_MSA
+    int8x16 shift = splat(count);
+    return (v16u8) __msa_sll_b((v16i8)a.native(), shift.native());
+#endif
+}
+
+#if SIMDPP_USE_AVX2
+static SIMDPP_INL
+uint8x32 i_shift_l(const uint8x32& a, unsigned count)
+{
+    uint16x16 mask, a16;
+    uint16_t mask1 = (0x00ff >> (8-count)) << 8;
+
+    a16 = a;
+    mask = splat(mask1);
+    a16 = shift_l(a16, count);
+    a16 = bit_andnot(a16, mask);
+    return uint8<32>(a16);
+}
+#endif
+
+#if SIMDPP_USE_AVX512BW
+SIMDPP_INL uint8<64> i_shift_l(const uint8<64>& a, unsigned count)
+{
+    uint16<32> mask, a16;
+    uint16_t mask1 = (0x00ff >> (8-count)) << 8;
+
+    a16 = a;
+    mask = splat(mask1);
+    a16 = shift_l(a16, count);
+    a16 = bit_andnot(a16, mask);
+    return uint8<64>(a16);
+}
+#endif
+
+// -----------------------------------------------------------------------------
 
 static SIMDPP_INL
 uint8x16 i_shift_l(const uint8x16& a, unsigned count)
@@ -383,24 +448,6 @@ uint64x4 i_shift_l(const uint64x4& a)
 {
     static_assert(count < 64, "Shift out of bounds");
     return _mm256_slli_epi64(a.native(), count);
-}
-#endif
-
-#if SIMDPP_USE_AVX2
-template<unsigned count> SIMDPP_INL
-int16x16 i_shift_l(const int16x16& a)
-{
-    static_assert(count < 64, "Shift out of bounds");
-    __m256i score = a.native();
-    __m256i rst;
-
-    if (count < 16){
-        rst = _mm256_alignr_epi8(score, _mm256_permute2x128_si256(score, score, _MM_SHUFFLE(0, 0, 2, 0)), 16 - count);
-    }else{
-        rst = _mm256_permute2x128_si256(score, score, _MM_SHUFFLE(0, 0, 2, 0));
-    }
-
-    return rst;
 }
 #endif
 

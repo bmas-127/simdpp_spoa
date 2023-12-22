@@ -179,7 +179,6 @@ int16x8 i_shift_r(const int16x8& a, unsigned count)
 static SIMDPP_INL
 int16x16 i_shift_r(const int16x16& a, unsigned count)
 {
-    printf("heyro");
 #if SIMDPP_WORKAROUND_AVX2_SHIFT_INTRINSICS
     __m256i r = a.native();
     __m128i x = _mm_cvtsi32_si128(count);
@@ -565,13 +564,13 @@ int16x8 i_shift_r(const int16x8& a)
     return __msa_srai_h(a.native(), count);
 #endif
 }
- 
+
 #if SIMDPP_USE_AVX2
 template<unsigned count> SIMDPP_INL
 int16x16 i_shift_r(const int16x16& a)
 {
-    static_assert(count < 64, "Shift out of bounds");
-    return _mm256_srli_si256(_mm256_permute2x128_si256(a.native(), a.native(), _MM_SHUFFLE(2, 0, 0, 1)), count - 16); // NOLINT
+    static_assert(count < 16, "Shift out of bounds");
+    return _mm256_srai_epi16(a.native(), count);
 }
 #endif
 

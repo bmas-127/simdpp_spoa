@@ -14,6 +14,7 @@
 
 #include <simdpp/types.h>
 #include <simdpp/detail/insn/store.h>
+#include <iostream>
 
 namespace simdpp {
 namespace SIMDPP_ARCH_NAMESPACE {
